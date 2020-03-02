@@ -1,0 +1,34 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel InitParticle
+#define THREAD_NUM 8 
+#define INIT_RAND_NUM 10
+
+#include "../../Shader/Common.cginc"
+
+RWStructuredBuffer<ParticleInfo> ParticleInfoBuffer;
+RWTexture2D<float4> InitTexture;
+float4 textInitData[INIT_RAND_NUM];
+
+float4 _InitTexSize;
+
+int _InitType; // 0 for random; 2 for init with texture 
+
+float _Size;
+
+[numthreads(THREAD_NUM,1,1)]
+void InitParticle(uint3 id : SV_DispatchThreadID)
+{
+    
+   if ( _InitType == 0 )
+   {
+       ParticleInfoBuffer[id.x].pos = float3( rand2(id.x) * 2 * _Size - float2(1,1) * _Size , 0 );
+       ParticleInfoBuffer[id.x].vel = normalize(float3(rand2(id.x*2) * 2 - float2(1,1) , 0 ));
+   } else if ( _InitType == 1 )
+   {
+       int i,j;
+
+       for ( i = 0 ; i < INIT_RAND_NUM; ++ i )
+       {
+       }
+   }
+}

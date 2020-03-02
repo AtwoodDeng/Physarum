@@ -1,0 +1,150 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+
+#pragma kernel UpdateParticle
+#pragma kernel Deposit
+#pragma kernel DiffuseTrail
+#pragma kernel DecayTrail
+#pragma kernel Clean
+
+#include "UnityCG.cginc"
+#include "../../Shader/Common.cginc"
+#define THREAD_NUM 8
+
+float _Size;
+float _SenseDistance;
+float4x4 _SenseLeftMat;
+float4x4 _SenseRightMat;
+float4x4 _TurnLeftMat;
+float4x4 _TurnRightMat;
+float _Speed;
+float _DepositRate;
+float _DiffuseRate;
+float _DecayRate;
+float _DeltaTime;
+int _TrailResolution;
+int _ParticleCount;
+
+
+RWStructuredBuffer<ParticleInfo> ParticleInfoBuffer;
+RWTexture2D<float4> TrailRead;
+RWTexture2D<float4> TrailWrite;
+RWTexture2D<float4> DepositTex;
+
+// Step I : Sense the Density From the Trail Map
+// Step II: Rotate base on the Trail Map
+// Step III: Move the particle
+[numthreads(THREAD_NUM,1,1)]
+void UpdateParticle(uint3 id : SV_DispatchThreadID)
+{
+    float3 pos        = ParticleInfoBuffer[id.x].pos;
+    float3 vel        = normalize(ParticleInfoBuffer[id.x].vel);
+    float3 posForward = vel * _SenseDistance + pos ;
+    float3 posLeft    = mul(_SenseLeftMat, vel ) * _SenseDistance + pos;
+    float3 posRight   = mul(_SenseRightMat, vel ) * _SenseDistance + pos;
+
+    posForward = RepeatPosition( posForward , _Size );
+    posLeft = RepeatPosition( posLeft , _Size );
+    posRight = RepeatPosition( posRight , _Size );
+
+    // Step I : sense the density
+    uint3 IDForward = GetTextureID( posForward , _Size, _TrailResolution);
+    uint3 IDLeft    = GetTextureID( posLeft , _Size, _TrailResolution);
+    uint3 IDRight   = GetTextureID( posRight , _Size, _TrailResolution);
+
+    float densityForward = TrailRead[IDForward.xy];
+    float densityLeft    = TrailRead[IDLeft.xy];
+    float densityRight   = TrailRead[IDRight.xy];
+
+    // compare the density 
+    if ( densityForward < densityLeft && densityForward < densityRight )
+    {
+        // turn randomly 
+        vel = rand( pos + _Time.yyy * 5) < 0.5 ? mul( _TurnLeftMat , vel ) : mul( _TurnRightMat , vel);
+    }else if ( densityLeft < densityForward && densityForward < densityRight )
+    {
+        // turn right
+        vel = mul( _TurnRightMat , vel );
+    }else if ( densityLeft > densityForward && densityForward > densityRight )
+    {
+        // turn left 
+        vel = mul( _TurnLeftMat , vel );
+    }
+
+    vel = normalize(vel);
+
+    pos += vel * _Speed * _DeltaTime;
+    pos = RepeatPosition( pos , _Size );
+    ParticleInfoBuffer[id.x].pos = pos;
+    ParticleInfoBuffer[id.x].vel = vel;
+}
+
+[numthreads(THREAD_NUM,THREAD_NUM,1)]
+void Clean(uint3 id : SV_DispatchThreadID)
+{
+    DepositTex[id.xy] = float4(0,0,0,0);
+
+}
+
+// Step IV : Deposit from the particle to the trail
+[numthreads(THREAD_NUM,1,1)]
+void Deposit(uint3 id : SV_DispatchThreadID)
+{
+    float3 pos = ParticleInfoBuffer[id.x].pos;
+
+    uint3 pID = GetTextureID(pos, _Size, _TrailResolution);
+
+    DepositTex[pID.xy] = _DepositRate * _DeltaTime;
+
+}
+
+//// Step IV : Deposit from the particle to the trail
+//[numthreads(THREAD_NUM,THREAD_NUM,1)]
+//void Deposit(uint3 id : SV_DispatchThreadID)
+//{
+//    float den = TrailRead[id.xy];
+//    for ( int i = 0 ; i < _ParticleCount ; ++ i )
+//    {
+//        float3 pos = ParticleInfoBuffer[i].pos;
+//        uint3 pID = GetTextureID(pos, _Size , _TrailResolution);
+
+//        if ( pID.x == id.x && pID.y == id.y )
+//        {
+//            den += _DepositRate * _DeltaTime;
+//        }
+//    }
+//    TrailWrite[id.xy] = den;
+//}
+
+// Step V : Diffuse To the Neighbour
+[numthreads(THREAD_NUM,THREAD_NUM,1)]
+void DiffuseTrail(uint3 id : SV_DispatchThreadID)
+{
+    float4 den = TrailRead[id.xy];
+    float4 depositDen = DepositTex[id.xy];
+
+    //get the deposit from last step
+    den += depositDen;
+
+    den *= ( 1 - _DiffuseRate * 9 );
+    for( int i = -1 ; i <= 1 ; ++i )
+    {
+        for( int j = -1 ; j <= 1 ; ++ j )
+        {
+            uint3 target = id;
+            target.x = (target.x + i + _TrailResolution) % _TrailResolution;
+            target.y = (target.y + j + _TrailResolution) % _TrailResolution;
+
+            den += TrailRead[target.xy] * _DiffuseRate;
+        }
+    }
+    TrailWrite[id.xy] = den;
+}
+
+// Step VI : Decay the Trail
+[numthreads(THREAD_NUM,THREAD_NUM,1)]
+void DecayTrail(uint3 id : SV_DispatchThreadID)
+{
+    float4 den = TrailRead[id.xy];
+    den *= lerp( 1.0 , _DecayRate , _DeltaTime) ;
+    TrailWrite[id.xy] = den;
+}

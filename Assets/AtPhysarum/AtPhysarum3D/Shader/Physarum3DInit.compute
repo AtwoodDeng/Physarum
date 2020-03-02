@@ -1,0 +1,18 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel InitParticle
+#define THREAD_NUM 8 
+
+#include "../../Shader/Common.cginc"
+
+RWStructuredBuffer<ParticleInfo> ParticleInfoBuffer;
+RWTexture2D<float4> InitTexture;
+
+float _Size;
+
+[numthreads(THREAD_NUM,1,1)]
+void InitParticle(uint3 id : SV_DispatchThreadID)
+{
+    //TODO : Finish this function
+   ParticleInfoBuffer[id.x].pos = rand3(id.x) * 2 * _Size - float3(1,1,1) * _Size ;
+   ParticleInfoBuffer[id.x].vel = normalize(rand3(id.x*2) * 2 - float3(1,1,1) );
+}
