@@ -12,7 +12,12 @@ public class Tex3DDisplay : MonoBehaviour
     private  RenderTexture modelSource;
 
     public Physarum3D reference;
+
+    [Range(0,1f)]
     public float fluidDensity = 1.0f;
+    [Range(0, 1f)]
+    public float visualIntensity = 1.0f;
+    public Texture2D LUT;
 
     public void UpdateView(RenderTexture source, RenderTexture destination)
     {
@@ -60,12 +65,10 @@ public class Tex3DDisplay : MonoBehaviour
         material.SetTexture("_Model", modelSource);
         material.SetVector("_ModelScale", modelScale);
         material.SetFloat("_Density", fluidDensity);
-
-        //material.SetVector("_LightDir", lightDir.normalized);
-
+        material.SetFloat("_Intensity", visualIntensity);
+        material.SetTexture("_LUT" , LUT);
+        
         material.SetInt("_UseLighting", 0);
-        //material.SetFloat("_EnergySampleRange", energySampleRange);
-        //material.SetFloat("_BeerLaw", beerLaw);
         material.SetInt("_DisplayChannel", 15);
 
         material.SetInt("_UseSlice", 0);

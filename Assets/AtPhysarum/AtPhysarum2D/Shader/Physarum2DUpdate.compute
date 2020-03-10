@@ -76,6 +76,7 @@ void UpdateParticle(uint3 id : SV_DispatchThreadID)
     pos = RepeatPosition( pos , _Size );
     ParticleInfoBuffer[id.x].pos = pos;
     ParticleInfoBuffer[id.x].vel = vel;
+
 }
 
 [numthreads(THREAD_NUM,THREAD_NUM,1)]

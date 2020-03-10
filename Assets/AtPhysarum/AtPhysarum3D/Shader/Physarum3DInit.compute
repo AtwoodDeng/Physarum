@@ -9,10 +9,26 @@ RWTexture2D<float4> InitTexture;
 
 float _Size;
 
+int _InitType;
+
 [numthreads(THREAD_NUM,1,1)]
 void InitParticle(uint3 id : SV_DispatchThreadID)
 {
-    //TODO : Finish this function
-   ParticleInfoBuffer[id.x].pos = rand3(id.x) * 2 * _Size - float3(1,1,1) * _Size ;
-   ParticleInfoBuffer[id.x].vel = normalize(rand3(id.x*2) * 2 - float3(1,1,1) );
+
+    if ( _InitType == 0 ) // random in cube
+    {
+       ParticleInfoBuffer[id.x].pos = rand3(id.x ) * 2 * _Size - float3(1,1,1) * _Size ;
+
+       float2 randVelSample = rand2(id.x * 2);
+       ParticleInfoBuffer[id.x].vel = rand_sphere( randVelSample.x , randVelSample.y , 1.0 );
+    }else if ( _InitType == 1 ) {
+       
+       float3 randPosSample = rand3(id.x);
+       ParticleInfoBuffer[id.x].pos = rand_sphere( randPosSample.x , randPosSample.y , randPosSample.z * _Size * 0.5 ) ;
+
+       float2 randVelSample = rand2(id.x * 2.0);
+       ParticleInfoBuffer[id.x].vel = rand_sphere( randVelSample.x , randVelSample.y , 1.0 );
+    }
+
 }
+ 

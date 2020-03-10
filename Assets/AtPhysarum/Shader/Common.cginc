@@ -3,6 +3,8 @@
 
 #define PI 3.1415926
 
+float _Test;
+
 struct ParticleInfo
 {
     float3 pos;
@@ -10,23 +12,28 @@ struct ParticleInfo
 };
 
 
+float rand(float id )
+{
+    return frac( sin( id * 18.319 ));
+}
+
 float rand(float3 co)
 {
-    return frac(sin(dot(co.xyz, float3(12.9898, 78.233, 45.5432))) * 458.5453);
+    return frac(sin(dot(co.xyz, float3(12.9898, 78.233, 45.5432))) * 1.2287 );
 }
 
 float3 rand3(float id )
 {
-    return frac(sin( float3(12.9898, 78.233, 45.5432) * id * 387.5453) + sin( float3(31.9898, 16.233, 17.5432) * id * 891.5453));
+    return frac(sin( float3(12.9898, 78.233, 45.5432) * id * 1.5453  ) + sin( float3(31.9898, 16.233, 5.5432) * id * 2.5453 ));
 }
 
 
 float2 rand2(float id )
 {
-    return frac(sin( float2(12.9898, 7.233) * id * 487.123) + sin( float2(83.9898, 125.233) * id * 168.123));
+    return frac(sin( float2(12.9898, 7.233) * id * 2.123 ) + sin( float2(83.9898, 125.233) * id * 1.123 ));
 }
 
-float3 randomPointOnSphere(float u, float v, float radius)
+float3 rand_sphere(float u, float v, float radius)
 {
     float theta = 2 * PI * u;
     float phi = acos(2 * v - 1);

@@ -8,13 +8,20 @@ public class Physarum2D : MonoBehaviour
     public enum InitType
     {
         Random = 0,
-        Texture = 0,
+        Texture = 1,
     }
 
+    // init parameters 
+    [Header("Init")] public InitType initType;
+    public int particleCount = 1000;
+    public Texture2D initTex;
+    public int trailResolution = 1024;
+
+
+    [Header("Update")]
     // size parameters 
     public float size=5f;
     public float senseDistance=0.1f;
-    public int trailResolution = 1024;
     public float senseAngle = 30f;
     public float turnAngleSpeed = 30f;
     public float speed = 0.1f;
@@ -22,12 +29,17 @@ public class Physarum2D : MonoBehaviour
     private Matrix4x4 senseRightMat;
     private Matrix4x4 turnLeftMat;
     private Matrix4x4 turnRightMat;
-    public float depositRate=1.0f;
+    [Range(0,1f/9f)]
     public float diffuseRate=0.05f;
+    [Range(-1f,1f)]
     public float decayRate = 0.99f;
-    public int particleCount = 1000;
     public int threadNum = 8;
 
+    [Header("Visualize")]
+    public float depositRate = 1.0f;
+    public Texture TrailLUT;
+
+    [Header("Shader & Material")]
     public ComputeShader InitParticle;
     public ComputeShader PhysarumUpdate;
     public Material renderMaterial;
@@ -56,6 +68,9 @@ public class Physarum2D : MonoBehaviour
     private int DecayTrailHandle;
     private int CleanHandle;
 
+    private int InitTypeID        = Shader.PropertyToID("_InitType");
+    private int InitTexSizeID     = Shader.PropertyToID("_InitTexSize");
+    private int InitTextureID     = Shader.PropertyToID("InitTexture");
     private int SizeID            = Shader.PropertyToID("_Size");
     private int SenseDistanceID   = Shader.PropertyToID("_SenseDistance");
     private int SpeedID           = Shader.PropertyToID("_Speed");
@@ -128,6 +143,9 @@ public class Physarum2D : MonoBehaviour
         if (TrailVisualMat != null)
         {
             TrailVisualMat.SetTexture("_MainTex" , trailRT[0]);
+
+            if ( TrailLUT !=null )
+                TrailVisualMat.SetTexture("_LUT" , TrailLUT);
         }
     }
 
@@ -148,6 +166,12 @@ public class Physarum2D : MonoBehaviour
             new Vector3(-0.5f,0.5f)
         });
 
+        InitParticle.SetInt(InitTypeID , (int) initType );
+        InitParticle.SetVector(InitTexSizeID, new Vector4(initTex.width ,initTex.height,0,0));
+        InitParticle.SetTexture(InitParticleHandle,InitTextureID,initTex);
+
+
+
         InitParticle.SetBuffer(InitParticleHandle, ParticleInfoID, particleInfo);
         InitParticle.SetFloat(SizeID,size);
         InitParticle.Dispatch(InitParticleHandle, particleCount / threadNum, 1, 1);
@@ -157,7 +181,6 @@ public class Physarum2D : MonoBehaviour
 
     public void UpdateShader()
     {
-
         PhysarumUpdate.SetFloat(SizeID, size );
         PhysarumUpdate.SetFloat(SenseDistanceID, senseDistance);
         PhysarumUpdate.SetMatrix(SenseLeftMatID, senseLeftMat);
