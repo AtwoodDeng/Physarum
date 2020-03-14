@@ -43,17 +43,19 @@ float3 rand_sphere(float u, float v, float radius)
     return float3(x, y, z);
 }
 
+// repeat the position in [-size, size]
 float3 RepeatPosition( float3 pos , float size )
 {
     return ( frac( pos /( size * 2.0) + float3(1,1,1) * 0.5 ) - float3(1,1,1) * 0.5 ) * size * 2.0;
 }
 
+// repeat the trial position in [0,resolution]
 uint3 RepeatTrailPos( uint3 id , int resolution )
 {
     return ( id + resolution ) % resolution;
 }
 
-
+// Get the texture id (uint3) according to the input position(in world)
 uint3 GetTextureID( float3 pos , float size, int resolution )
 {
     return round( ( pos / ( size * 2.0 ) + 0.5 ) * resolution );

@@ -13,10 +13,6 @@
 
 float _Size;
 float _SenseDistance;
-//float4x4 _SenseLeftMat;
-//float4x4 _SenseRightMat;
-//float4x4 _TurnLeftMat;
-//float4x4 _TurnRightMat;
 float4x4 _SenseMat[MAX_SENSOR_NUM];
 float4x4 _TurnMat[MAX_SENSOR_NUM];
 int _SensorCount;
@@ -29,7 +25,7 @@ int _TrailResolution;
 int _ParticleCount;
 
 RWStructuredBuffer<ParticleInfo> ParticleInfoBuffer;
-RWTexture3D<float4> TrailRead;
+Texture3D<float4> TrailRead;
 RWTexture3D<float4> TrailWrite;
 RWTexture3D<float4> DepositTex;
 
@@ -50,13 +46,6 @@ void UpdateParticle(uint3 id : SV_DispatchThreadID)
         sensorPos[i] = mul(_SenseMat[i-1] , vel ) * _SenseDistance + pos;
         sensorPos[i] = RepeatPosition(sensorPos[i], _Size );
     }
-    //float3 posForward = vel * _SenseDistance + pos ;
-    //float3 posLeft    = mul(_SenseLeftMat, vel ) * _SenseDistance + pos;
-    //float3 posRight   = mul(_SenseRightMat, vel ) * _SenseDistance + pos;
-
-    //posForward = RepeatPosition( posForward , _Size );
-    //posLeft = RepeatPosition( posLeft , _Size );
-    //posRight = RepeatPosition( posRight , _Size );
 
     // Step I : sense the density
     float densityArray[MAX_SENSOR_NUM];
@@ -65,7 +54,7 @@ void UpdateParticle(uint3 id : SV_DispatchThreadID)
     for ( int k = 0 ; k < _SensorCount+1; ++ k)
     { 
         uint3 mID = GetTextureID( sensorPos[k] , _Size , _TrailResolution);
-        densityArray[k] = TrailRead[mID];
+        densityArray[k] = TrailRead[mID].r;
         
     }
     
@@ -117,23 +106,6 @@ void Deposit(uint3 id : SV_DispatchThreadID)
 
 } 
 
-//// Step IV : Deposit from the particle to the trail
-//[numthreads(THREAD_NUM,THREAD_NUM,1)]
-//void Deposit(uint3 id : SV_DispatchThreadID)
-//{
-//    float den = TrailRead[id.xy];
-//    for ( int i = 0 ; i < _ParticleCount ; ++ i )
-//    {
-//        float3 pos = ParticleInfoBuffer[i].pos;
-//        uint3 pID = GetTextureID(pos, _Size , _TrailResolution);
-
-//        if ( pID.x == id.x && pID.y == id.y )
-//        {
-//            den += _DepositRate * _DeltaTime;
-//        }
-//    }
-//    TrailWrite[id.xy] = den;
-//}
 
 // Step V : Diffuse To the Neighbour
 [numthreads(THREAD_NUM,THREAD_NUM,THREAD_NUM)]

@@ -1,6 +1,7 @@
 ﻿// Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel InitParticle
 #define THREAD_NUM 8 
+#define REPEAT_TIME 20
 
 #include "../../Shader/Common.cginc"
 
@@ -21,8 +22,7 @@ void InitParticle(uint3 id : SV_DispatchThreadID)
 
        float2 randVelSample = rand2(id.x * 2);
        ParticleInfoBuffer[id.x].vel = rand_sphere( randVelSample.x , randVelSample.y , 1.0 );
-    }else if ( _InitType == 1 ) {
-       
+    }else if ( _InitType == 1 ) { // random in sphere 
        float3 randPosSample = rand3(id.x);
        ParticleInfoBuffer[id.x].pos = rand_sphere( randPosSample.x , randPosSample.y , randPosSample.z * _Size * 0.5 ) ;
 

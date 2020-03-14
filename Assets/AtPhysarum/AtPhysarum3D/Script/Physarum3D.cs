@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
+using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -11,7 +12,6 @@ public class Physarum3D : MonoBehaviour
     {
         Cube,
         Sphere,
-
     }
 
     [Header("Init")]
@@ -26,21 +26,17 @@ public class Physarum3D : MonoBehaviour
     public float senseAngle = 30f;
     public float turnAngleSpeed = 30f; 
     public float speed = 0.1f;
-    //private Matrix4x4 senseLeftMat;
-    //private Matrix4x4 senseRightMat;
-    //private Matrix4x4 turnLeftMat;
-    //private Matrix4x4 turnRightMat;
     private Matrix4x4[] senseMats;
     private Matrix4x4[] turnMats;
     [Range(2,8)]
     public int SensorCount = 4;
-
-    public float depositRate=1.0f;
+    [Range(0,10f)]
+    public float depositRate=4.0f;
     [Range(0,1f/27f)]
     public float diffuseRate=0.05f;
-    [Range(0,1f)]
+    [Range(-1f,1f)]
     public float decayRate = 0.7f;
-    public int threadNum = 8;
+    const int threadNum = 8;
 
     [Header("Shader & Material")]
     public ComputeShader InitParticle;
@@ -48,16 +44,15 @@ public class Physarum3D : MonoBehaviour
     public Material renderMaterial;
 
     private ComputeBuffer particleInfo,quad;
-
     public RenderTexture[] trailRT;
-    public RenderTexture depositRT;
+    private RenderTexture depositRT;
     private const int READ = 0;
     private const int WRITE = 1;
 
     struct ParticleInfo
     {
         public Vector3 position;
-        public Vector3 radius;
+        public Vector3 velocity;
 
     }
 
@@ -145,7 +140,7 @@ public class Physarum3D : MonoBehaviour
         trailRT = new RenderTexture[2];
         for (int i = 0; i < 2; ++i)
         {
-            var rt = new RenderTexture(trailResolution, trailResolution, 0, RenderTextureFormat.ARGBFloat);
+            var rt = new RenderTexture(trailResolution, trailResolution, 0, RenderTextureFormat.RFloat);
             rt.enableRandomWrite = true;
             rt.wrapMode = TextureWrapMode.Repeat;
             rt.dimension = TextureDimension.Tex3D;
@@ -157,7 +152,7 @@ public class Physarum3D : MonoBehaviour
         }
 
         {
-            var rt = new RenderTexture(trailResolution, trailResolution, 0, RenderTextureFormat.ARGBFloat);
+            var rt = new RenderTexture(trailResolution, trailResolution, 0, RenderTextureFormat.RFloat);
             rt.enableRandomWrite = true;
             rt.wrapMode = TextureWrapMode.Repeat;
             rt.dimension = TextureDimension.Tex3D;

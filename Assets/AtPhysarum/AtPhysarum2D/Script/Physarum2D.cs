@@ -33,7 +33,7 @@ public class Physarum2D : MonoBehaviour
     public float diffuseRate=0.05f;
     [Range(-1f,1f)]
     public float decayRate = 0.99f;
-    public int threadNum = 8;
+    const int threadNum = 8;
 
     [Header("Visualize")]
     public float depositRate = 1.0f;
@@ -57,7 +57,7 @@ public class Physarum2D : MonoBehaviour
     struct ParticleInfo
     {
         public Vector3 position;
-        public Vector3 radius;
+        public Vector3 velocity;
 
     }
 
@@ -123,7 +123,7 @@ public class Physarum2D : MonoBehaviour
         trailRT = new RenderTexture[2];
         for (int i = 0; i < 2; ++i)
         {
-            var rt = new RenderTexture(trailResolution, trailResolution, 0, RenderTextureFormat.ARGBFloat);
+            var rt = new RenderTexture(trailResolution, trailResolution, 0, RenderTextureFormat.RFloat);
             rt.enableRandomWrite = true;
             rt.wrapMode = TextureWrapMode.Repeat;
             rt.Create();
@@ -132,7 +132,7 @@ public class Physarum2D : MonoBehaviour
         }
 
         {
-            var rt = new RenderTexture(trailResolution, trailResolution, 0, RenderTextureFormat.ARGBFloat);
+            var rt = new RenderTexture(trailResolution, trailResolution, 0, RenderTextureFormat.RFloat);
             rt.enableRandomWrite = true;
             rt.wrapMode = TextureWrapMode.Repeat;
             rt.Create();
@@ -155,7 +155,15 @@ public class Physarum2D : MonoBehaviour
 
         particleInfo = new ComputeBuffer(particleCount, Marshal.SizeOf(typeof(ParticleInfo)));
 
-        quad = new ComputeBuffer(6,Marshal.SizeOf(typeof(Vector3)));
+        InitParticle.SetInt(InitTypeID , (int) initType );
+        InitParticle.SetVector(InitTexSizeID, new Vector4(initTex.width ,initTex.height,0,0));
+        InitParticle.SetTexture(InitParticleHandle,InitTextureID,initTex);
+
+        InitParticle.SetBuffer(InitParticleHandle, ParticleInfoID, particleInfo);
+        InitParticle.SetFloat(SizeID,size);
+        InitParticle.Dispatch(InitParticleHandle, particleCount / threadNum, 1, 1);
+
+        quad = new ComputeBuffer(6, Marshal.SizeOf(typeof(Vector3)));
         quad.SetData(new[]
         {
             new Vector3(-0.5f,0.5f),
@@ -165,17 +173,6 @@ public class Physarum2D : MonoBehaviour
             new Vector3(-0.5f,-0.5f),
             new Vector3(-0.5f,0.5f)
         });
-
-        InitParticle.SetInt(InitTypeID , (int) initType );
-        InitParticle.SetVector(InitTexSizeID, new Vector4(initTex.width ,initTex.height,0,0));
-        InitParticle.SetTexture(InitParticleHandle,InitTextureID,initTex);
-
-
-
-        InitParticle.SetBuffer(InitParticleHandle, ParticleInfoID, particleInfo);
-        InitParticle.SetFloat(SizeID,size);
-        InitParticle.Dispatch(InitParticleHandle, particleCount / threadNum, 1, 1);
-
     }
 
 

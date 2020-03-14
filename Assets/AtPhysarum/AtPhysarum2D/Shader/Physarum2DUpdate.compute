@@ -26,7 +26,7 @@ int _ParticleCount;
 
 
 RWStructuredBuffer<ParticleInfo> ParticleInfoBuffer;
-RWTexture2D<float4> TrailRead;
+Texture2D<float4> TrailRead;
 RWTexture2D<float4> TrailWrite;
 RWTexture2D<float4> DepositTex;
 
@@ -51,11 +51,12 @@ void UpdateParticle(uint3 id : SV_DispatchThreadID)
     uint3 IDLeft    = GetTextureID( posLeft , _Size, _TrailResolution);
     uint3 IDRight   = GetTextureID( posRight , _Size, _TrailResolution);
 
-    float densityForward = TrailRead[IDForward.xy];
-    float densityLeft    = TrailRead[IDLeft.xy];
-    float densityRight   = TrailRead[IDRight.xy];
+    float densityForward = TrailRead[IDForward.xy].r;
+    float densityLeft    = TrailRead[IDLeft.xy].r;
+    float densityRight   = TrailRead[IDRight.xy].r;
 
-    // compare the density 
+    
+    // Step II : Rotate according to the density 
     if ( densityForward < densityLeft && densityForward < densityRight )
     {
         // turn randomly 
@@ -72,18 +73,17 @@ void UpdateParticle(uint3 id : SV_DispatchThreadID)
 
     vel = normalize(vel);
 
+    // Step III : Move the Particles
     pos += vel * _Speed * _DeltaTime;
     pos = RepeatPosition( pos , _Size );
     ParticleInfoBuffer[id.x].pos = pos;
     ParticleInfoBuffer[id.x].vel = vel;
-
 }
 
 [numthreads(THREAD_NUM,THREAD_NUM,1)]
 void Clean(uint3 id : SV_DispatchThreadID)
 {
     DepositTex[id.xy] = float4(0,0,0,0);
-
 }
 
 // Step IV : Deposit from the particle to the trail
@@ -93,28 +93,11 @@ void Deposit(uint3 id : SV_DispatchThreadID)
     float3 pos = ParticleInfoBuffer[id.x].pos;
 
     uint3 pID = GetTextureID(pos, _Size, _TrailResolution);
-
+    
     DepositTex[pID.xy] = _DepositRate * _DeltaTime;
 
 }
 
-//// Step IV : Deposit from the particle to the trail
-//[numthreads(THREAD_NUM,THREAD_NUM,1)]
-//void Deposit(uint3 id : SV_DispatchThreadID)
-//{
-//    float den = TrailRead[id.xy];
-//    for ( int i = 0 ; i < _ParticleCount ; ++ i )
-//    {
-//        float3 pos = ParticleInfoBuffer[i].pos;
-//        uint3 pID = GetTextureID(pos, _Size , _TrailResolution);
-
-//        if ( pID.x == id.x && pID.y == id.y )
-//        {
-//            den += _DepositRate * _DeltaTime;
-//        }
-//    }
-//    TrailWrite[id.xy] = den;
-//}
 
 // Step V : Diffuse To the Neighbour
 [numthreads(THREAD_NUM,THREAD_NUM,1)]
