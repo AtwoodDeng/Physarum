@@ -1,5 +1,5 @@
 # Physarum(Unity Demo)
-### Intro
+## Intro
 ![image](https://github.com/AtwoodDeng/Physarum/blob/master/Demo/DemoCircle.png "Evolution from a circle")
 ![image](https://github.com/AtwoodDeng/Physarum/blob/master/Demo/3D_Demo2.JPG "Evolution from a 3D Sphere")
 ![image](https://github.com/AtwoodDeng/Physarum/blob/master/Demo/StaryNightDemo2.gif.gif "Evolution from Stary Night")
@@ -7,7 +7,7 @@
 
 This is a Unity Demo for the Physarum Simulation. Inspired by [Sage Jenson's Procedural Art](https://sagejenson.com/physarum), this project implemented the [evolution of Physarum networks](http://eprints.uwe.ac.uk/15260/1/artl.2010.16.2.pdf) by using some CG techniques including compute shader, GPU particles and volume raymarching. A brief introduction will be presented as below.
 
-### Algorithm
+## Algorithm
 ![image](https://github.com/AtwoodDeng/Physarum/blob/master/Demo/EvolutionStep.jpg "Evolution Step")
 As the image upon, the simulation contains 6 step.
 
@@ -30,7 +30,7 @@ the z value is always zero. x,y repeat in [-Size,Size]
 
 For 3D:
 x,y,z repeat in [-Size,Size]
-#### Trail
+### Trail
 For 2D:
 2D Render Texture * 3
 TrailRead/TrailWrite: two render texture for trail update 
@@ -39,13 +39,20 @@ Deposit : an additional render texture used in deposit step
 For3D:
 3D Render Texture * 3 
 
-### Visualization
-The GPU particle is used to visulize the cell. The implementation is similar to [Robert-K's project](https://github.com/Robert-K/gpu-particles/blob/master/README.md). See the [code](https://github.com/AtwoodDeng/Physarum/blob/master/Assets/AtPhysarum/Shader/BillboardParticles.shader) in the project.
+## Visualization
 
+### Particle
+The GPU particle is used to visulize the cell. The implementation is similar to [Robert-K's project](https://github.com/Robert-K/gpu-particles/blob/master/README.md). See the [code](https://github.com/AtwoodDeng/Physarum/blob/master/Assets/AtPhysarum/Shader/BillboardParticles.shader) in the project.
+![image](https://github.com/AtwoodDeng/Physarum/blob/master/Demo/SimpleMove.gif.gif "Simple Move")
+
+### 2D Trail
 2D Trail's visulization is straightforward. The trail render texture is used as a main texture. A LUT is added. See the [code](https://github.com/AtwoodDeng/Physarum/blob/master/Assets/AtPhysarum/Shader/VisualizeTrail.shader)
 
+![image](https://github.com/AtwoodDeng/Physarum/blob/master/Demo/LUT.jpg "Simple Move")
+
+### 3D Trail
 3D Trail's visulization is volume raymarching. It's basically a post-process effect, which used to visulize the 3D Trail render texture. See the [code](https://github.com/AtwoodDeng/Physarum/blob/master/Assets/AtPhysarum/AtPhysarum3D/Shader/VolumeShader.shader)
 
-### Optimization
+## Optimization
 
-### Reference
+## Reference
