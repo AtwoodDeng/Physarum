@@ -8,7 +8,6 @@ This is a Unity Demo for the Physarum Simulation. Inspired by [Sage Jenson's Pro
 ![image](https://github.com/AtwoodDeng/Physarum/blob/master/Demo/3D_Demo2.JPG "Evolution from a 3D Sphere")
 ![image](https://github.com/AtwoodDeng/Physarum/blob/master/Demo/StaryNightDemo2.gif.gif "Evolution from Stary Night")
 ![image](https://github.com/AtwoodDeng/Physarum/blob/master/Demo/MonaLisaDemo.gif "Evolution from Mona Lisa")
-![image](https://github.com/AtwoodDeng/Physarum/blob/master/Demo/MonaLisaDemo.gif "Evolution from Mona Lisa")
 ![image](https://github.com/AtwoodDeng/Physarum/blob/master/Demo/3DDemo2.gif "Evolution from Mona Lisa")
 
 ## Features
