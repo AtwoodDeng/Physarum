@@ -23,6 +23,8 @@ Support up to 500,000 particles with the trail resolution of 256 * 256 * 256.
 
 ![image](https://github.com/AtwoodDeng/Physarum/blob/master/Demo/50_256_withTex.JPG "Rendering result in Render Doc")
 
+(My Device : GPU 1080Ti 11G, CPU Intel i7-8700)
+
 ### Init Particle by Texture (2D Only)
 
 Our system supports initilize the particle system through a texture.
