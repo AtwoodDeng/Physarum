@@ -8,7 +8,8 @@
 
 #include "UnityCG.cginc"
 #include "../../Shader/Common.cginc"
-#define THREAD_NUM 8
+#define PARTICLE_THREAD_NUM 32
+#define TEX_THREAD_NUM 8
 #define MAX_SENSOR_NUM 9
 
 float _Size;
@@ -32,7 +33,7 @@ RWTexture3D<float4> DepositTex;
 // Step I : Sense the Density From the Trail Map
 // Step II: Rotate base on the Trail Map
 // Step III: Move the particle
-[numthreads(THREAD_NUM,1,1)]
+[numthreads(PARTICLE_THREAD_NUM,1,1)]
 void UpdateParticle(uint3 id : SV_DispatchThreadID)
 {
     float3 pos        = ParticleInfoBuffer[id.x].pos;
@@ -58,8 +59,9 @@ void UpdateParticle(uint3 id : SV_DispatchThreadID)
         
     }
     
-    //Determine the rotation
-    // find the min and max density;
+    // Step II : Determine the rotation
+    // find the min and max density
+    // the iteration starts from 1 
     int minInd =0;
     int maxInd = 0 ;
     for( int t = 1 ; t < _SensorCount+1; ++ t )
@@ -70,24 +72,27 @@ void UpdateParticle(uint3 id : SV_DispatchThreadID)
             maxInd = t;
     }
 
+
     if ( minInd == 0 ) // turn randomly
     {
         int turnID = ( floor(rand(pos + id.x * 2 ) * _SensorCount) % _SensorCount ) ;
         vel = mul( _TurnMat[turnID] , vel );
     }else{
+        // turn mat starts from 0, maxInd starts from 1 
         vel = mul( _TurnMat[maxInd-1] , vel );
     }
 
 
     vel = normalize(vel);
 
+    // Step III : Move the particle
     pos += vel * _Speed * _DeltaTime;
     pos = RepeatPosition( pos , _Size );
     ParticleInfoBuffer[id.x].pos = pos;
     ParticleInfoBuffer[id.x].vel = vel;
 }
 
-[numthreads(THREAD_NUM,THREAD_NUM,THREAD_NUM)]
+[numthreads(TEX_THREAD_NUM,TEX_THREAD_NUM,TEX_THREAD_NUM)]
 void Clean(uint3 id : SV_DispatchThreadID)
 {
     DepositTex[id.xyz] = float4(0,0,0,0);
@@ -95,7 +100,7 @@ void Clean(uint3 id : SV_DispatchThreadID)
 }
 
 // Step IV : Deposit from the particle to the trail
-[numthreads(THREAD_NUM,1,1)]
+[numthreads(PARTICLE_THREAD_NUM,1,1)]
 void Deposit(uint3 id : SV_DispatchThreadID)
 {
     float3 pos = ParticleInfoBuffer[id.x].pos;
@@ -108,7 +113,7 @@ void Deposit(uint3 id : SV_DispatchThreadID)
 
 
 // Step V : Diffuse To the Neighbour
-[numthreads(THREAD_NUM,THREAD_NUM,THREAD_NUM)]
+[numthreads(TEX_THREAD_NUM,TEX_THREAD_NUM,TEX_THREAD_NUM)]
 void DiffuseTrail(uint3 id : SV_DispatchThreadID)
 {
 
@@ -139,7 +144,7 @@ void DiffuseTrail(uint3 id : SV_DispatchThreadID)
 }
 
 // Step VI : Decay the Trail
-[numthreads(THREAD_NUM,THREAD_NUM,THREAD_NUM)]
+[numthreads(TEX_THREAD_NUM,TEX_THREAD_NUM,TEX_THREAD_NUM)]
 void DecayTrail(uint3 id : SV_DispatchThreadID)
 {
     float4 den = TrailRead[id.xyz];

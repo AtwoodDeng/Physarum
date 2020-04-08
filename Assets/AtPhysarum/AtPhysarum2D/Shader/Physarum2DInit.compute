@@ -1,6 +1,6 @@
 ﻿// Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel InitParticle
-#define THREAD_NUM 8 
+#define PARTICLE_THREAD_NUM 32 
 #define INIT_RAND_NUM 30
 
 #include "../../Shader/Common.cginc"
@@ -17,7 +17,7 @@ int _InitType; // 0 for random; 2 for init with texture
 
 float _Size;
 
-[numthreads(THREAD_NUM,1,1)]
+[numthreads(PARTICLE_THREAD_NUM,1,1)]
 void InitParticle(uint3 id : SV_DispatchThreadID)
 {
     

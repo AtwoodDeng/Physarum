@@ -33,10 +33,14 @@ public class Physarum2D : MonoBehaviour
     public float diffuseRate=0.05f;
     [Range(-1f,1f)]
     public float decayRate = 0.99f;
-    const int threadNum = 8;
+    const int texThreadNum = 16;
+    const int particleThreadNum = 32;
 
     [Header("Visualize")]
+    [Range(0,5f)]
     public float depositRate = 1.0f;
+    [Range(0,1f)]
+    public float intensity = 1.0f;
     public Texture TrailLUT;
 
     [Header("Shader & Material")]
@@ -88,6 +92,7 @@ public class Physarum2D : MonoBehaviour
     private int TrailWriteID      = Shader.PropertyToID("TrailWrite");
     private int DepositID         = Shader.PropertyToID("DepositTex");
     private int ParticleInfoID    = Shader.PropertyToID("ParticleInfoBuffer");
+    private int IntensityID       = Shader.PropertyToID("_Intensity");
 
     public void SwitchRT()
     {
@@ -154,6 +159,7 @@ public class Physarum2D : MonoBehaviour
         ReleaseBuffers();
 
         particleInfo = new ComputeBuffer(particleCount, Marshal.SizeOf(typeof(ParticleInfo)));
+        int particleGroupCount = Mathf.CeilToInt((float)particleCount / particleThreadNum);
 
         InitParticle.SetInt(InitTypeID , (int) initType );
         InitParticle.SetVector(InitTexSizeID, new Vector4(initTex.width ,initTex.height,0,0));
@@ -161,7 +167,7 @@ public class Physarum2D : MonoBehaviour
 
         InitParticle.SetBuffer(InitParticleHandle, ParticleInfoID, particleInfo);
         InitParticle.SetFloat(SizeID,size);
-        InitParticle.Dispatch(InitParticleHandle, particleCount / threadNum, 1, 1);
+        InitParticle.Dispatch(InitParticleHandle, particleGroupCount, 1, 1);
 
         quad = new ComputeBuffer(6, Marshal.SizeOf(typeof(Vector3)));
         quad.SetData(new[]
@@ -192,8 +198,8 @@ public class Physarum2D : MonoBehaviour
         PhysarumUpdate.SetInt(TrailResolutionID, trailResolution);
         PhysarumUpdate.SetInt(ParticleCountID, particleCount);
 
-        int particleGroupCount = Mathf.CeilToInt((float) particleCount / threadNum);
-        int texGroupCount = Mathf.CeilToInt((float)trailResolution / threadNum);
+        int particleGroupCount = Mathf.CeilToInt((float) particleCount / particleThreadNum);
+        int texGroupCount = Mathf.CeilToInt((float)trailResolution / texThreadNum);
 
 
         PhysarumUpdate.SetTexture(UpdateParticleHandle, TrailReadID, trailRT[READ]);
@@ -216,13 +222,13 @@ public class Physarum2D : MonoBehaviour
         PhysarumUpdate.Dispatch(DecayTrailHandle, texGroupCount, texGroupCount, 1);
         SwitchRT();
 
-
+        TrailVisualMat.SetFloat(IntensityID,intensity);
     }
 
     public void CleanUpShader()
     {
 
-        int texGroupCount = Mathf.CeilToInt((float)trailResolution / threadNum);
+        int texGroupCount = Mathf.CeilToInt((float)trailResolution / texThreadNum);
 
         PhysarumUpdate.SetTexture(CleanHandle, DepositID, depositRT);
         PhysarumUpdate.Dispatch(CleanHandle, texGroupCount, texGroupCount, 1);

@@ -218,18 +218,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   initType: 1
-  particleCount: 500000
+  particleCount: 1000000
   initTex: {fileID: 2800000, guid: 792b21344043c5e4c876dcae89294e5f, type: 3}
   trailResolution: 1024
   size: 5
-  senseDistance: 0.2
+  senseDistance: 0.1
   senseAngle: 45
-  turnAngleSpeed: 30
+  turnAngleSpeed: 45
   speed: 0.2
   diffuseRate: 0.1
   decayRate: 0.5
-  depositRate: 3
-  TrailLUT: {fileID: 2800000, guid: 61267047275a6e94aa2761dfa894ea91, type: 3}
+  depositRate: 4
+  intensity: 0.19
+  TrailLUT: {fileID: 2800000, guid: 93f2a7f732061bf4c98a34362ad3876f, type: 3}
   InitParticle: {fileID: 7200000, guid: 7e3db3cec8e99934397132128a5ff9ea, type: 3}
   PhysarumUpdate: {fileID: 7200000, guid: dc4349bf086b23b4e97140ea0211fb1d, type: 3}
   renderMaterial: {fileID: 2100000, guid: cd3db9f54845ff945b571c87862f7457, type: 2}

@@ -8,7 +8,8 @@
 
 #include "UnityCG.cginc"
 #include "../../Shader/Common.cginc"
-#define THREAD_NUM 8
+#define PARTICLE_THREAD_NUM 32
+#define TEX_THREAD_NUM 16
 
 float _Size;
 float _SenseDistance;
@@ -33,7 +34,7 @@ RWTexture2D<float4> DepositTex;
 // Step I : Sense the Density From the Trail Map
 // Step II: Rotate base on the Trail Map
 // Step III: Move the particle
-[numthreads(THREAD_NUM,1,1)]
+[numthreads(PARTICLE_THREAD_NUM,1,1)]
 void UpdateParticle(uint3 id : SV_DispatchThreadID)
 {
     float3 pos        = ParticleInfoBuffer[id.x].pos;
@@ -80,14 +81,14 @@ void UpdateParticle(uint3 id : SV_DispatchThreadID)
     ParticleInfoBuffer[id.x].vel = vel;
 }
 
-[numthreads(THREAD_NUM,THREAD_NUM,1)]
+[numthreads(TEX_THREAD_NUM,TEX_THREAD_NUM,1)]
 void Clean(uint3 id : SV_DispatchThreadID)
 {
     DepositTex[id.xy] = float4(0,0,0,0);
 }
 
 // Step IV : Deposit from the particle to the trail
-[numthreads(THREAD_NUM,1,1)]
+[numthreads(PARTICLE_THREAD_NUM,1,1)]
 void Deposit(uint3 id : SV_DispatchThreadID)
 {
     float3 pos = ParticleInfoBuffer[id.x].pos;
@@ -100,7 +101,7 @@ void Deposit(uint3 id : SV_DispatchThreadID)
 
 
 // Step V : Diffuse To the Neighbour
-[numthreads(THREAD_NUM,THREAD_NUM,1)]
+[numthreads(TEX_THREAD_NUM,TEX_THREAD_NUM,1)]
 void DiffuseTrail(uint3 id : SV_DispatchThreadID)
 {
     float4 den = TrailRead[id.xy];
@@ -125,7 +126,7 @@ void DiffuseTrail(uint3 id : SV_DispatchThreadID)
 }
 
 // Step VI : Decay the Trail
-[numthreads(THREAD_NUM,THREAD_NUM,1)]
+[numthreads(TEX_THREAD_NUM,TEX_THREAD_NUM,1)]
 void DecayTrail(uint3 id : SV_DispatchThreadID)
 {
     float4 den = TrailRead[id.xy];

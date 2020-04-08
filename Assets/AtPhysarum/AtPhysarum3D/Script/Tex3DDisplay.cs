@@ -68,7 +68,8 @@ public class Tex3DDisplay : MonoBehaviour
         material.SetFloat("_Intensity", visualIntensity);
         material.SetTexture("_LUT" , LUT);
         
-        material.SetInt("_UseLighting", 0);
+        material.SetVector("_LightDir", new Vector4(1.0f,0,0,0));
+        //material.SetInt("_UseLighting", 0);
         material.SetInt("_DisplayChannel", 15);
 
         material.SetInt("_UseSlice", 0);

@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Particle
+  m_Name: Particle2D
   m_Shader: {fileID: 4800000, guid: f05a0df3920cc1444a0f856df833ff15, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4

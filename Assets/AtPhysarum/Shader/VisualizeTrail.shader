@@ -36,6 +36,7 @@
             float4 _MainTex_ST;
             sampler2D _LUT;
             float4 _LUT_ST;
+            float _Intensity;
 
             v2f vert (appdata v)
             {
@@ -51,7 +52,7 @@
                 fixed4 trail = tex2D(_MainTex, i.uv);
                 fixed4 col = tex2D( _LUT , float2( clamp( trail.r , 0.001 , 0.995) , 0));
 
-                return col;
+                return col * _Intensity;
             }
             ENDCG
         }

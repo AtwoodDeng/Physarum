@@ -165,23 +165,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   initType: 1
-  particleCount: 200000
+  particleCount: 500000
   trailResolution: 128
   size: 2
-  senseDistance: 0.15
+  senseDistance: 0.2
   senseAngle: 45
   turnAngleSpeed: 45
-  speed: 0.15
+  speed: 0.2
   SensorCount: 4
   depositRate: 5
   diffuseRate: 0.02
   decayRate: 0.517
-  threadNum: 8
   InitParticle: {fileID: 7200000, guid: f1e650501ce9b874e936850e894b9c36, type: 3}
   PhysarumUpdate: {fileID: 7200000, guid: c314077b6c7ed584589a54fa54a02833, type: 3}
   renderMaterial: {fileID: 2100000, guid: 212db5d005ceedb49b56355c6be09b09, type: 2}
   trailRT: []
-  depositRT: {fileID: 0}
 --- !u!1 &1926971027
 GameObject:
   m_ObjectHideFlags: 0
@@ -298,7 +296,7 @@ MonoBehaviour:
   shader: {fileID: 4800000, guid: 3a846cd4a25a92d42baf59545b4f2a6a, type: 3}
   reference: {fileID: 817154365}
   fluidDensity: 0.38
-  visualIntensity: 0.298
+  visualIntensity: 0.136
   LUT: {fileID: 2800000, guid: 983f91fe61a27f24fa309fb07630196d, type: 3}
 --- !u!1 &2140949878
 GameObject:

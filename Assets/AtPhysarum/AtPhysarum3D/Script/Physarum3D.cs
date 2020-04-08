@@ -36,7 +36,8 @@ public class Physarum3D : MonoBehaviour
     public float diffuseRate=0.05f;
     [Range(-1f,1f)]
     public float decayRate = 0.7f;
-    const int threadNum = 8;
+    const int texThreadNum = 8;
+    private const int particleThreadNum = 32;
 
     [Header("Shader & Material")]
     public ComputeShader InitParticle;
@@ -169,6 +170,7 @@ public class Physarum3D : MonoBehaviour
         ReleaseBuffers();
 
         particleInfo = new ComputeBuffer(particleCount, Marshal.SizeOf(typeof(ParticleInfo)));
+        int particleGroupCount = Mathf.CeilToInt((float)particleCount / particleThreadNum);
 
         quad = new ComputeBuffer(6,Marshal.SizeOf(typeof(Vector3)));
         quad.SetData(new[]
@@ -184,7 +186,7 @@ public class Physarum3D : MonoBehaviour
         InitParticle.SetInt(InitTypeID,(int)initType);
         InitParticle.SetBuffer(InitParticleHandle, ParticleInfoID, particleInfo);
         InitParticle.SetFloat(SizeID,size);
-        InitParticle.Dispatch(InitParticleHandle, particleCount / threadNum, 1, 1);
+        InitParticle.Dispatch(InitParticleHandle, particleGroupCount, 1, 1);
 
     }
 
@@ -205,8 +207,8 @@ public class Physarum3D : MonoBehaviour
         PhysarumUpdate.SetInt(TrailResolutionID, trailResolution);
         PhysarumUpdate.SetInt(ParticleCountID, particleCount);
 
-        int particleGroupCount = Mathf.CeilToInt((float) particleCount / threadNum);
-        int texGroupCount = Mathf.CeilToInt((float)trailResolution / threadNum);
+        int particleGroupCount = Mathf.CeilToInt((float) particleCount / particleThreadNum);
+        int texGroupCount = Mathf.CeilToInt((float)trailResolution / texThreadNum);
 
         PhysarumUpdate.SetTexture(UpdateParticleHandle, TrailReadID, trailRT[READ]);
         PhysarumUpdate.SetBuffer(UpdateParticleHandle, ParticleInfoID, particleInfo);
@@ -232,7 +234,7 @@ public class Physarum3D : MonoBehaviour
 
     public void CleanUpShader()
     {
-        int texGroupCount = Mathf.CeilToInt((float)trailResolution / threadNum);
+        int texGroupCount = Mathf.CeilToInt((float)trailResolution / texThreadNum);
 
         PhysarumUpdate.SetTexture(CleanHandle, DepositID, depositRT);  
         PhysarumUpdate.Dispatch(CleanHandle, texGroupCount, texGroupCount, texGroupCount);
